@@ -1,7 +1,8 @@
 #----------------------------------------------------------------------------#
 # Models.
 #----------------------------------------------------------------------------#
-
+import datetime
+from flask_sqlalchemy import SQLAlchemy
 from datetime import datetime
 from enum import unique
 from flask_sqlalchemy import SQLAlchemy
@@ -10,7 +11,7 @@ db = SQLAlchemy()
 
 
 class Venue(db.Model):
-    __tablename__ = 'Venue'
+    __tablename__ = 'venues'
 
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(), unique=True)
@@ -18,14 +19,14 @@ class Venue(db.Model):
     state = db.Column(db.String(120), nullable=False)
     address = db.Column(db.String(120))
     phone = db.Column(db.String(120))
-    genres = db.Column(db.ARRAY(db.String(120)))
+    genres = db.Column(db.ARRAY(db.String(120)), nullable=False)
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
     website_link = db.Column(db.String(120))
     seeking_talent = db.Column(db.Boolean(), default=False)
     seeking_description = db.Column(db.String(), default='')
-    creation_date = db.Column(db.DateTime, default=datetime.utcnow)
-    shows = db.relationship('Show', backref='Venue', lazy=True)
+    creation_date = db.Column(db.DateTime(), default=datetime.utcnow())
+    shows = db.relationship('Show', backref='venue', lazy=True)
 
     def __repr__(self):
         return f'<Venue {self.id} {self.name} {self.address} {self.state}>'
@@ -34,21 +35,21 @@ class Venue(db.Model):
 
 
 class Artist(db.Model):
-    __tablename__ = 'Artist'
+    __tablename__ = 'artists'
 
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String)
+    name = db.Column(db.String, unique=True)
     city = db.Column(db.String(120))
-    state = db.Column(db.String(120))
+    state = db.Column(db.String(120), nullable=False)
     phone = db.Column(db.String(120))
-    genres = db.Column(db.ARRAY(db.String(120)))
+    genres = db.Column(db.ARRAY(db.String(120)), nullable=False)
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(120))
     website_link = db.Column(db.String(120))
-    seeking_venue = db.Column(db.Boolean(), default=False)
-    seeking_description = db.Column(db.String())
+    seeking_venue = db.Column(db.Boolean, default=False, server_default="false")
+    seeking_description = db.Column(db.String(), default='')
     creation_date = db.Column(db.DateTime(), default=datetime.utcnow())
-    shows = db.relationship('Show', backref='Artist', lazy=True)
+    shows = db.relationship('Show', backref='artist', lazy=True)
 
     def __repr__(self):
         return f'<Artist {self.id} {self.name} {self.phone}>'
@@ -56,11 +57,11 @@ class Artist(db.Model):
     # TODO: implement any missing fields, as a database migration using Flask-Migrate
 
 class Show(db.Model):
-    __tablename__ = 'Show'
+    __tablename__ = 'shows'
 
     id = db.Column(db.Integer, primary_key=True)
-    artist_id = db.Column(db.Integer, db.ForeignKey('Artist.id'), nullable=False)
-    venue_id = db.Column(db.Integer, db.ForeignKey('Venue.id'), nullable=False)
+    artist_id = db.Column(db.Integer, db.ForeignKey('artists.id'), nullable=False)
+    venue_id = db.Column(db.Integer, db.ForeignKey('venues.id'), nullable=False)
     start_time = db.Column(db.DateTime(), nullable=False)
 
     def __repr__(self):
